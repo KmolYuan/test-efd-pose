@@ -2,6 +2,7 @@ use efd::{na, uvec, PosedEfd2};
 use four_bar::plot2d::*;
 
 fn main() {
+    const LENGTH: f64 = 6.36;
     let vectors = ANGLE
         .iter()
         .map(|a| uvec([a.cos(), a.sin()]))
@@ -9,26 +10,31 @@ fn main() {
     let target_pose = PATH
         .iter()
         .zip(&vectors)
-        .map(|(p, v)| na::Point::from(*p) + v.into_inner())
+        .map(|(p, v)| na::Point::from(*p) + v.into_inner() * LENGTH)
         .map(|p| [p.x, p.y])
         .collect::<Vec<_>>();
-    let efd = PosedEfd2::from_vectors_harmonic(PATH, vectors, false, 9);
+    let efd = PosedEfd2::from_vectors_harmonic(PATH, vectors, true, 10);
     let curve = efd.curve_efd().generate(90);
     let pose = curve
         .iter()
         .zip(efd.pose_efd().generate(90))
-        .map(|(p, v)| na::Point::from(*p) + uvec(v).into_inner())
+        .map(|(p, v)| na::Point::from(*p) + uvec(v).into_inner() * LENGTH)
         .map(|p| [p.x, p.y])
         .collect::<Vec<_>>();
     let b = SVGBackend::new("test.svg", (1600, 1600));
-    Figure::new(None)
+    let mut fig = Figure::new(None)
         .add_line("Target", PATH, Style::Line, RED)
-        .add_line("Target Pose", target_pose, Style::Circle, RED)
-        .add_line("EFD", curve, Style::Line, BLUE)
-        .add_line("EFD Pose", pose, Style::Circle, BLUE)
-        .legend(LegendPos::Hide)
-        .plot(b)
-        .unwrap();
+        .add_line("", &target_pose, Style::Circle, RED)
+        .add_line("EFD", &curve, Style::Line, BLUE)
+        .add_line("", &pose, Style::Circle, BLUE)
+        .legend(LegendPos::LR);
+    for (p, v) in PATH.iter().zip(&target_pose) {
+        fig.push_line("", vec![*p, *v], Style::Line, RED);
+    }
+    for (p, v) in curve.iter().zip(&pose) {
+        fig.push_line("", vec![*p, *v], Style::Line, BLUE);
+    }
+    fig.plot(b).unwrap();
 }
 
 const PATH: &[[f64; 2]] = &[
