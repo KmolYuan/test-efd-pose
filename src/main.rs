@@ -15,8 +15,8 @@ fn main() {
         .collect::<Vec<_>>();
     let efd = PosedEfd2::from_vectors(PATH, vectors, true);
     dbg!(efd.harmonic());
-    let (curve, pose) = efd.generate(90, LENGTH);
-    let b = SVGBackend::new("test.svg", (1600, 1600));
+    let (curve, pose) = efd.generate_by(THETA, LENGTH);
+    let b = SVGBackend::new("posed.svg", (1600, 1600));
     let mut fig = Figure::new(None)
         .add_line("Target", PATH, Style::Line, RED)
         .add_line("", &target_pose, Style::Circle, RED)
@@ -44,3 +44,14 @@ const PATH: &[[f64; 2]] = &[
     [7.8, -4.9],
 ];
 const ANGLE: &[f64] = &[-0.9, 0., 0.7, 1.5, 2.8, -2.3, -2., -1.9, -2.1];
+const THETA: &[f64] = &[
+    0.,
+    0.5215074810676462,
+    0.983047577901551,
+    1.4458755928329023,
+    1.9058118775305808,
+    2.199775541352154,
+    2.4876003220571277,
+    2.810830197474452,
+    std::f64::consts::PI,
+];
