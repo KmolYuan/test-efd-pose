@@ -13,19 +13,14 @@ fn main() {
         .map(|(p, v)| na::Point::from(*p) + v.into_inner() * LENGTH)
         .map(|p| [p.x, p.y])
         .collect::<Vec<_>>();
-    let efd = PosedEfd2::from_vectors_harmonic(PATH, vectors, true, 10);
-    let curve = efd.curve_efd().generate(90);
-    let pose = curve
-        .iter()
-        .zip(efd.pose_efd().generate(90))
-        .map(|(p, v)| na::Point::from(*p) + uvec(v).into_inner() * LENGTH)
-        .map(|p| [p.x, p.y])
-        .collect::<Vec<_>>();
+    let efd = PosedEfd2::from_vectors(PATH, vectors, true);
+    dbg!(efd.harmonic());
+    let (curve, pose) = efd.generate(90, LENGTH);
     let b = SVGBackend::new("test.svg", (1600, 1600));
     let mut fig = Figure::new(None)
         .add_line("Target", PATH, Style::Line, RED)
         .add_line("", &target_pose, Style::Circle, RED)
-        .add_line("EFD", &curve, Style::Line, BLUE)
+        .add_line("EFD Recon.", &curve, Style::Line, BLUE)
         .add_line("", &pose, Style::Circle, BLUE)
         .legend(LegendPos::LR);
     for (p, v) in PATH.iter().zip(&target_pose) {
