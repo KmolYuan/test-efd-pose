@@ -14,19 +14,24 @@ fn main() {
         .collect::<Vec<_>>();
 
     const GEN: u64 = 50;
+    let mut history = Vec::with_capacity(GEN as usize);
     let pb = indicatif::ProgressBar::new(GEN);
     let s = Solver::build(De::default(), MFbSyn::from_uvec(PATH, vectors, Mode::Open))
         .seed(50)
-        .pop_num(200)
+        .pop_num(400)
         .task(|ctx| ctx.gen == GEN)
-        .callback(|ctx| pb.set_position(ctx.gen))
+        .callback(|ctx| {
+            history.push(ctx.best_f.fitness());
+            pb.set_position(ctx.gen);
+        })
         .solve()
         .unwrap();
     pb.finish();
     println!("harmonic: {}", s.func().harmonic());
     let fb = s.into_result();
-    dbg!(&fb);
-    let (curve, pose) = fb.pose(60);
+    let (curve, pose) = fb.pose(30);
+    let b = SVGBackend::new("history.svg", (800, 800));
+    plot::fb::history(b, history).unwrap();
     let pose = curve
         .iter()
         .zip(pose)
