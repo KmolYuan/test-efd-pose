@@ -1,4 +1,3 @@
-use efd::na;
 use four_bar::{
     mh::{De, Solver},
     plot::{self, *},
@@ -11,8 +10,7 @@ fn main() {
     let target_pose = PATH
         .iter()
         .zip(&vectors)
-        .map(|(p, v)| na::Point::from(*p) + na::Vector2::from(*v) * LENGTH)
-        .map(|p| [p.x, p.y])
+        .map(|(c, v)| [c[0] + v[0] * LENGTH, c[1] + v[1] * LENGTH])
         .collect::<Vec<_>>();
 
     const GEN: u64 = 50;
