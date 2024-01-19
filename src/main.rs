@@ -18,7 +18,7 @@ fn main() {
     const GEN: u64 = 50;
     let pb = indicatif::ProgressBar::new(GEN);
     let s = Solver::build(De::default(), MFbSyn::from_uvec(PATH, vectors, Mode::Open))
-        .seed(0)
+        .seed(50)
         .pop_num(200)
         .task(|ctx| ctx.gen == GEN)
         .callback(|ctx| pb.set_position(ctx.gen))
