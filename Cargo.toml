@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 efd = { path = "../efd-rs" }
 four-bar = { path = "../four-bar-rs/four-bar", features = ["plot"] }
+indicatif = { version = "0.17", features = ["improved_unicode"] }
