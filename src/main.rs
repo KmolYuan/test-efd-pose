@@ -44,10 +44,10 @@ fn main() {
         .add_line("", &pose, Style::Circle, BLUE)
         .legend(LegendPos::LR);
     for (p, v) in PATH.iter().zip(&target_pose) {
-        fig.push_line("", vec![*p, *v], Style::Line, RED);
+        fig.push_line("", vec![*p, *v], Style::DashedLine, RED);
     }
     for (p, v) in curve.iter().zip(&pose) {
-        fig.push_line("", vec![*p, *v], Style::Line, BLUE);
+        fig.push_line("", vec![*p, *v], Style::DashedLine, BLUE);
     }
     let b = SVGBackend::new("syn.svg", (1600, 1600));
     fig.plot(b).unwrap();
