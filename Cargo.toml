@@ -3,8 +3,6 @@ name = "test-efd-pose"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 four-bar = { path = "../four-bar-rs/four-bar", features = ["plot"] }
 indicatif = { version = "0.17", features = ["improved_unicode"] }
