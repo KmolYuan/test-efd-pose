@@ -3,8 +3,7 @@ use four_bar::{
     mech::mfb::{MNormFourBar, NormFourBar, Stat, UnNorm},
     mh::{De, Solver},
     plot::{self, *},
-    syn::{MFbSyn, Mode},
-    MFourBar,
+    syn, MFourBar,
 };
 
 fn main() {
@@ -28,28 +27,25 @@ fn main() {
         },
     };
     const LENGTH: f64 = 7.29;
-    let (target_curve, vectors) = target_fb.pose(60);
+    let (target_curve, vectors) = target_fb.pose(30);
     // ===
-    // let target_curve = PATH;
+    // let target_curve = PATH.to_vec();
     // const LENGTH: f64 = 6.36;
-    // let vectors = ANGLE
-    //     .iter()
-    //     .map(|a| [a.cos(), a.sin()])
-    //     .collect::<Vec<_>>();
+    // let vectors = ANGLE.iter().map(|a| [a.cos(), a.sin()]).collect::<Vec<_>>();
     let target_pose = target_curve
         .iter()
         .zip(&vectors)
         .map(|(c, v)| (na::Point2::from(*c) + na::Vector2::from(*v) * LENGTH).into())
         .collect::<Vec<_>>();
 
-    const GEN: u64 = 100;
+    let t0 = std::time::Instant::now();
+    const GEN: u64 = 70;
     let mut history = Vec::with_capacity(GEN as usize);
-    let func = MFbSyn::from_uvec(&target_curve, vectors, Mode::Open);
-    println!("harmonic: {}", func.harmonic());
+    let func = syn::MFbPPSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
     let pb = indicatif::ProgressBar::new(GEN);
     let s = Solver::build(De::default(), func)
-        .seed(0)
-        .pop_num(400)
+        .seed(10)
+        .pop_num(200)
         .task(|ctx| ctx.gen == GEN)
         .callback(|ctx| {
             history.push(ctx.best_f.fitness());
@@ -58,6 +54,7 @@ fn main() {
         .solve()
         .unwrap();
     pb.finish();
+    println!("Time spent: {:?}", t0.elapsed());
     let fb = s.into_result();
     let (curve, pose) = fb.pose(60);
     let b = SVGBackend::new("history.svg", (800, 800));
@@ -68,16 +65,16 @@ fn main() {
         .map(|(c, v)| (na::Point2::from(*c) + na::Vector2::from(v) * LENGTH).into())
         .collect::<Vec<_>>();
     let mut fig = plot::fb::Figure::new(None)
+        .legend(LegendPos::LR)
         .add_line("Target", &target_curve, Style::Line, RED)
-        .add_line("", &target_pose, Style::Circle, RED)
-        .add_line("Optimized", &curve, Style::Line, BLUE)
-        .add_line("", &pose, Style::Circle, BLUE)
-        .legend(LegendPos::LR);
+        .add_line("", &target_pose, Style::Circle, RED);
     for (p, v) in target_curve.iter().zip(&target_pose) {
-        fig.push_line("", vec![*p, *v], Style::DashedLine, RED);
+        fig.push_line("", vec![*p, *v], Style::DashDottedLine, RED);
     }
+    fig.push_line("Optimized", &curve, Style::Line, BLUE);
+    fig.push_line("", &pose, Style::Circle, BLUE);
     for (p, v) in curve.iter().zip(&pose) {
-        fig.push_line("", vec![*p, *v], Style::DashedLine, BLUE);
+        fig.push_line("", vec![*p, *v], Style::DashDottedLine, BLUE);
     }
     let b = SVGBackend::new("syn.svg", (1600, 1600));
     fig.plot(b).unwrap();
