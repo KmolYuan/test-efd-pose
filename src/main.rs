@@ -38,13 +38,13 @@ fn main() {
         .collect::<Vec<_>>();
 
     let t0 = std::time::Instant::now();
-    const GEN: u64 = 200;
+    const GEN: u64 = 150;
     let mut history = Vec::with_capacity(GEN as usize);
     let func = syn::MFbSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
     let pb = indicatif::ProgressBar::new(GEN);
     let s = Solver::build(De::default(), func)
-        .seed(10)
-        .pop_num(400)
+        .seed(0)
+        .pop_num(200)
         .task(|ctx| ctx.gen == GEN)
         .callback(|ctx| {
             history.push(ctx.best_f.fitness());
