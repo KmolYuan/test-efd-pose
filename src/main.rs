@@ -1,5 +1,4 @@
 use four_bar::{
-    efd::na,
     mech::mfb::{MNormFourBar, NormFourBar, Stat, UnNorm},
     mh::{De, Solver},
     plot::{self, *},
@@ -35,17 +34,17 @@ fn main() {
     let target_pose = target_curve
         .iter()
         .zip(&vectors)
-        .map(|(c, v)| (na::Point2::from(*c) + na::Vector2::from(*v) * LENGTH).into())
+        .map(|(c, v)| std::array::from_fn(|i| c[i] + LENGTH * v[i]))
         .collect::<Vec<_>>();
 
     let t0 = std::time::Instant::now();
-    const GEN: u64 = 70;
+    const GEN: u64 = 200;
     let mut history = Vec::with_capacity(GEN as usize);
-    let func = syn::MFbPPSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
+    let func = syn::MFbSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
     let pb = indicatif::ProgressBar::new(GEN);
     let s = Solver::build(De::default(), func)
         .seed(10)
-        .pop_num(200)
+        .pop_num(400)
         .task(|ctx| ctx.gen == GEN)
         .callback(|ctx| {
             history.push(ctx.best_f.fitness());
@@ -62,7 +61,7 @@ fn main() {
     let pose = curve
         .iter()
         .zip(pose)
-        .map(|(c, v)| (na::Point2::from(*c) + na::Vector2::from(v) * LENGTH).into())
+        .map(|(c, v)| std::array::from_fn(|i| c[i] + LENGTH * v[i]))
         .collect::<Vec<_>>();
     let mut fig = plot::fb::Figure::new(None)
         .legend(LegendPos::LR)
