@@ -1,36 +1,22 @@
 use four_bar::{
-    mech::mfb::{MNormFourBar, NormFourBar, Stat, UnNorm},
     mh::{De, Solver},
     plot::{self, *},
     syn, MFourBar,
 };
 
 fn main() {
-    let target_fb = MFourBar {
-        unnorm: UnNorm {
-            p1x: -2.,
-            p1y: -3.,
-            a: 0.2,
-            l2: 12.,
-        },
-        norm: MNormFourBar {
-            base: NormFourBar {
-                l1: 5.,
-                l3: 4.,
-                l4: 9.,
-                l5: 5.,
-                g: 1.,
-                stat: Stat::C1B1,
-            },
-            e: 0.1411971,
-        },
-    };
+    let target_fb =
+        ron::de::from_reader::<_, MFourBar>(std::fs::File::open("hsieh-motion.ron").unwrap())
+            .unwrap();
     const LENGTH: f64 = 7.29;
-    let (target_curve, vectors) = target_fb.pose(30);
+    let (target_curve, vectors) = target_fb.pose(60);
     // ===
     // let target_curve = PATH.to_vec();
     // const LENGTH: f64 = 6.36;
     // let vectors = ANGLE.iter().map(|a| [a.cos(), a.sin()]).collect::<Vec<_>>();
+    // === Hsieh
+    // let fb =
+    //     ron::de::from_reader::<_, MFourBar>(std::fs::File::open("hsieh.ron").unwrap()).unwrap();
     let target_pose = target_curve
         .iter()
         .zip(&vectors)
@@ -41,6 +27,7 @@ fn main() {
     const GEN: u64 = 150;
     let mut history = Vec::with_capacity(GEN as usize);
     let func = syn::MFbSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
+    dbg!(func.harmonic());
     let pb = indicatif::ProgressBar::new(GEN);
     let s = Solver::build(De::default(), func)
         .seed(0)
@@ -54,10 +41,10 @@ fn main() {
         .unwrap();
     pb.finish();
     println!("Time spent: {:?}", t0.elapsed());
-    let fb = s.into_result();
-    let (curve, pose) = fb.pose(60);
     let b = SVGBackend::new("history.svg", (800, 800));
     plot::fb::history(b, history).unwrap();
+    let fb = s.into_result();
+    let (curve, pose) = fb.pose(60);
     let pose = curve
         .iter()
         .zip(pose)
