@@ -1,29 +1,42 @@
-use efd::PosedEfd2;
-use four_bar::plot::*;
+use four_bar::{efd, plot::*};
 
 fn main() {
-    let vectors = ANGLE.iter().map(|a| [a.cos(), a.sin()]).collect::<Vec<_>>();
-    let mut target_pose = vectors.clone();
-    target_pose.insert(0, [0.; 2]);
-    let mut pos_i = 0;
-    target_pose.iter_mut().reduce(|a, b| {
-        (0..2).for_each(|i| b[i] += POS[pos_i] * a[i]);
-        pos_i += 1;
-        b
-    });
-    target_pose.pop();
-    let efd = PosedEfd2::from_uvec(PATH, vectors, true);
-    // let curve = efd.curve_efd().generate(90);
-    let pose = efd.pose_efd().generate_norm(90);
-    efd.pose_efd()
-        .as_geo()
-        .inverse()
-        .transform_inplace(&mut target_pose);
+    const T: &[f64] = &[
+        0.0,
+        0.4470294233619797,
+        0.833440423024198,
+        1.5495480938915984,
+        2.1238246470304687,
+        2.8305776616959863,
+        3.4500229817089303,
+        4.102175632876617,
+        4.620648779537075,
+        5.107200935652393,
+        5.407539805003856,
+        5.721174374784138,
+        5.9748002222709875,
+    ];
+    let curve = efd::tests::CURVE2D.to_vec();
+    let efd = efd::Efd2::from_curve(&curve, false);
+    let mut curve_recon = efd.generate(90);
+    curve_recon.drain(..curve_recon.len() - 20);
+    let (t, _) = efd::get_target_pos(&curve, false);
+    let t_norm = efd.generate_by(&t);
+    let t = efd.generate_by(T);
+    // let pose = efd.pose_efd().generate_norm(90);
+    // efd.pose_efd()
+    //     .as_geo()
+    //     .inverse()
+    //     .transform_inplace(&mut target_pose);
     let b = SVGBackend::new("test.svg", (1600, 1600));
     fb::Figure::new(None)
-        .add_line("Target Pose", target_pose, Style::Line, RED)
-        .add_line("EFD Pose", pose, Style::Line, BLUE)
-        .legend(LegendPos::Hide)
+        // .add_line("Target", curve, Style::Line, BLUE)
+        .add_line("Target", &curve, Style::Line, BLUE)
+        .add_line("EFD Recon.", &curve_recon, Style::Line, GREEN)
+        .add_line("t", &t, Style::Cross, RED)
+        .add_line("t - θ1", &t_norm, Style::Circle, RED)
+        .add_line("", &t_norm, Style::DashDottedLine, RED)
+        .legend(LegendPos::UL)
         .plot(b)
         .unwrap();
 }
