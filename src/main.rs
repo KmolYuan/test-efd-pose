@@ -1,19 +1,20 @@
 use four_bar::{
     mh::{De, Solver},
     plot::{self, *},
-    syn, MFourBar,
+    syn,
 };
 
 fn main() {
-    let target_fb =
-        ron::de::from_reader::<_, MFourBar>(std::fs::File::open("hsieh-motion.ron").unwrap())
-            .unwrap();
-    const LENGTH: f64 = 7.29;
-    let (target_curve, vectors) = target_fb.pose(60);
+    // let target_fb = ron::de::from_reader::<_, four_bar::MFourBar>(
+    //     std::fs::File::open("hsieh-motion.ron").unwrap(),
+    // )
+    // .unwrap();
+    // const LENGTH: f64 = 7.29;
+    // let (target_curve, vectors) = target_fb.pose(60);
     // ===
-    // let target_curve = PATH.to_vec();
-    // const LENGTH: f64 = 6.36;
-    // let vectors = ANGLE.iter().map(|a| [a.cos(), a.sin()]).collect::<Vec<_>>();
+    let target_curve = PATH.to_vec();
+    const LENGTH: f64 = 6.36;
+    let vectors = ANGLE.iter().map(|a| [a.cos(), a.sin()]).collect::<Vec<_>>();
     // === Hsieh
     // let fb =
     //     ron::de::from_reader::<_, MFourBar>(std::fs::File::open("hsieh.ron").unwrap()).unwrap();
@@ -24,7 +25,7 @@ fn main() {
         .collect::<Vec<_>>();
 
     let t0 = std::time::Instant::now();
-    const GEN: u64 = 150;
+    const GEN: u64 = 200;
     let mut history = Vec::with_capacity(GEN as usize);
     let func = syn::MFbSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
     dbg!(func.harmonic());
@@ -41,9 +42,10 @@ fn main() {
         .unwrap();
     pb.finish();
     println!("Time spent: {:?}", t0.elapsed());
+    let (err, fb) = s.into_err_result();
+    println!("Error: {err}");
     let b = SVGBackend::new("history.svg", (800, 800));
     plot::fb::history(b, history).unwrap();
-    let fb = s.into_result();
     let (curve, pose) = fb.pose(60);
     let pose = curve
         .iter()
