@@ -17,7 +17,7 @@ fn main() {
     // ];
     // let curve = CURVE2D.to_vec();
     // let curve = efd::tests::CURVE2D.to_vec();
-    let efd = efd::Efd2::from_curve_harmonic(&curve, false, 1);
+    let efd = efd::Efd2::from_curve_harmonic(&curve, false, 8);
     let curve_recon = efd.generate_norm(90);
     let (t, _) = efd::get_target_pos(&curve, false);
     let curve = efd.as_geo().inverse().transform(curve);
