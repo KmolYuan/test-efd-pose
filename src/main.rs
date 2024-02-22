@@ -1,7 +1,7 @@
 use four_bar::{csv, plot::*};
 
 fn main() {
-    let w = std::fs::File::open("slice.csv").unwrap();
+    let w = std::fs::File::open("test.csv").unwrap();
     let curve = csv::from_reader(w).unwrap();
     // const CURVE2D: &[[f64; 2]] = &[
     //     [1.0, 1.0],
@@ -17,7 +17,7 @@ fn main() {
     // ];
     // let curve = CURVE2D.to_vec();
     // let curve = efd::tests::CURVE2D.to_vec();
-    let (efd, t) = efd::Efd2::from_curve_harmonic_and_get(&curve, true, 7);
+    let (efd, t) = efd::Efd2::from_curve_harmonic_and_get(&curve, false, 7);
     let curve_recon = efd.generate_norm(90);
     let curve = efd.as_geo().inverse().transform(curve);
     let t_norm = efd.generate_norm_by_t(&t);
@@ -25,9 +25,9 @@ fn main() {
         .add_line("EFD Recon.", vec![curve_recon[0]], Style::Circle, GREEN)
         .add_line("", &curve_recon[..85], Style::Line, GREEN)
         .add_line("Target", vec![curve[0]], Style::Circle, BLUE)
-        .add_line("", &curve[..2], Style::Line, BLUE)
-        .add_line("t-θ+π", vec![t_norm[0]], Style::Circle, RED)
-        .add_line("", &t_norm[..2], Style::DashDottedLine, RED)
+        .add_line("", &curve[..4], Style::Line, BLUE)
+        .add_line("t - θ + π", vec![t_norm[0]], Style::Circle, RED)
+        .add_line("", &t_norm[..4], Style::DashDottedLine, RED)
         .legend(LegendPos::UL)
         .plot(SVGBackend::new("test.svg", (1600, 1600)))
         .unwrap();
