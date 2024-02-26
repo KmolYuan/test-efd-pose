@@ -10,7 +10,7 @@ fn main() {
     // )
     // .unwrap();
     // const LENGTH: f64 = 7.29;
-    // let (target_curve, vectors) = target_fb.pose(60);
+    // let (target_curve, vectors) = target_fb.pose(30);
     // ===
     let target_curve = PATH.to_vec();
     const LENGTH: f64 = 6.36;
@@ -25,13 +25,13 @@ fn main() {
         .collect::<Vec<_>>();
 
     let t0 = std::time::Instant::now();
-    const GEN: u64 = 200;
+    const GEN: u64 = 120;
     let mut history = Vec::with_capacity(GEN as usize);
     let func = syn::MFbSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
-    dbg!(func.harmonic());
+    // dbg!(func.harmonic());
     let pb = indicatif::ProgressBar::new(GEN);
     let s = Solver::build(De::default(), func)
-        .seed(0)
+        .seed(10)
         .pop_num(200)
         .task(|ctx| ctx.gen == GEN)
         .callback(|ctx| {
