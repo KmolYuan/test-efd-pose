@@ -25,25 +25,25 @@ fn main() {
         .collect::<Vec<_>>();
 
     let t0 = std::time::Instant::now();
-    const GEN: u64 = 120;
+    const GEN: u64 = 200;
     let mut history = Vec::with_capacity(GEN as usize);
     let func = syn::MFbSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
     // dbg!(func.harmonic());
     let pb = indicatif::ProgressBar::new(GEN);
     let s = Solver::build(De::default(), func)
-        .seed(10)
+        .seed(0)
         .pop_num(200)
         .task(|ctx| ctx.gen == GEN)
         .callback(|ctx| {
-            history.push(ctx.best_f.fitness());
+            history.push(ctx.best.get_eval());
             pb.set_position(ctx.gen);
         })
-        .solve()
-        .unwrap();
+        .solve();
     pb.finish();
     println!("Time spent: {:?}", t0.elapsed());
     let (err, fb) = s.into_err_result();
-    println!("Error: {err}");
+    use four_bar::mh::Fitness as _;
+    println!("Error: {}", err.eval());
     let b = SVGBackend::new("history.svg", (800, 800));
     plot::fb::history(b, history).unwrap();
     let (curve, pose) = fb.pose(60);
