@@ -27,6 +27,7 @@ fn main() {
     let t0 = std::time::Instant::now();
     const GEN: u64 = 200;
     let mut history = Vec::with_capacity(GEN as usize);
+    let mut pareto = Vec::with_capacity(GEN as usize);
     let func = syn::MFbSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
     let pb = indicatif::ProgressBar::new(GEN);
     pb.set_style(indicatif::ProgressStyle::with_template("{wide_bar} {msg} {pos}/{len}").unwrap());
@@ -36,21 +37,24 @@ fn main() {
         .pareto_limit(20)
         .task(|ctx| ctx.gen == GEN)
         .callback(|ctx| {
-            pb.set_position(ctx.gen);
             let len = ctx.best.len();
             let eval = ctx.best.get_eval();
-            // pb.set_message(format!("[eval: {eval:.04}]"));
+            pb.set_position(ctx.gen);
             pb.set_message(format!("[pareto: {len}/eval: {eval:.04}]"));
+            // pb.set_message(format!("[eval: {eval:.04}]"));
+            pareto.push(len);
             history.push(eval);
         })
         .solve();
     pb.finish();
     println!("Time spent: {:?}", t0.elapsed());
+    let b = SVGBackend::new("pareto.svg", (800, 800));
+    plot::fb::pareto(b, s.as_best_set().pareto_from_product()).unwrap();
     let (err, fb) = s.into_err_result();
     use four_bar::mh::Fitness as _;
     println!("Error: {}", err.eval());
-    let b = SVGBackend::new("history.svg", (800, 800));
-    plot::fb::history(b, history).unwrap();
+    let b = SVGBackend::new("history.svg", (1200, 800));
+    plot::fb::history_pareto(b, history, pareto).unwrap();
     let (curve, pose) = fb.pose(60);
     let pose = curve
         .iter()
