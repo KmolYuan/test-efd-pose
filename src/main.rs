@@ -10,7 +10,7 @@ fn main() {
     // )
     // .unwrap();
     // const LENGTH: f64 = 7.29;
-    // let (target_curve, vectors) = target_fb.pose(30);
+    // let (target_curve, vectors) = target_fb.pose(180);
     // ===
     let target_curve = PATH.to_vec();
     const LENGTH: f64 = 6.36;
@@ -28,15 +28,20 @@ fn main() {
     const GEN: u64 = 200;
     let mut history = Vec::with_capacity(GEN as usize);
     let func = syn::MFbSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
-    // dbg!(func.harmonic());
     let pb = indicatif::ProgressBar::new(GEN);
+    pb.set_style(indicatif::ProgressStyle::with_template("{wide_bar} {msg} {pos}/{len}").unwrap());
     let s = Solver::build(De::default(), func)
         .seed(0)
-        .pop_num(200)
+        .pop_num(2000)
+        .pareto_limit(20)
         .task(|ctx| ctx.gen == GEN)
         .callback(|ctx| {
-            history.push(ctx.best.get_eval());
             pb.set_position(ctx.gen);
+            let len = ctx.best.len();
+            let eval = ctx.best.get_eval();
+            // pb.set_message(format!("[eval: {eval:.04}]"));
+            pb.set_message(format!("[pareto: {len}/eval: {eval:.04}]"));
+            history.push(eval);
         })
         .solve();
     pb.finish();
