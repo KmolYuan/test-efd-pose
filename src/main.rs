@@ -34,7 +34,6 @@ fn main() {
     let s = Solver::build(De::default(), func)
         .seed(0)
         .pop_num(2000)
-        .pareto_limit(20)
         .task(|ctx| ctx.gen == GEN)
         .callback(|ctx| {
             let len = ctx.best.len();
