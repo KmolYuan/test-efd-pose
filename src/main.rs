@@ -1,5 +1,5 @@
 use four_bar::{
-    mh::{De, Solver},
+    mh,
     plot::{self, *},
     syn,
 };
@@ -31,9 +31,9 @@ fn main() {
     let func = syn::MFbSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
     let pb = indicatif::ProgressBar::new(GEN);
     pb.set_style(indicatif::ProgressStyle::with_template("{wide_bar} {msg} {pos}/{len}").unwrap());
-    let s = Solver::build(De::default(), func)
+    let s = mh::Solver::build(mh::De::default().strategy(mh::Strategy::C1F1), func)
         .seed(0)
-        .pop_num(2000)
+        .pop_num(2600)
         .task(|ctx| ctx.gen == GEN)
         .callback(|ctx| {
             let len = ctx.best.len();
