@@ -33,7 +33,7 @@ fn main() {
     pb.set_style(indicatif::ProgressStyle::with_template("{wide_bar} {msg} {pos}/{len}").unwrap());
     let s = mh::Solver::build(mh::De::default().strategy(mh::Strategy::C1F1), func)
         .seed(0)
-        .pop_num(2600)
+        .pop_num(2000)
         .task(|ctx| ctx.gen == GEN)
         .callback(|ctx| {
             let len = ctx.best.len();
