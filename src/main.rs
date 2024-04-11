@@ -1,7 +1,9 @@
 use four_bar::plot::*;
+use rand::{Rng as _, SeedableRng as _};
 
 fn main() {
-    let curve = (0..10).map(|_| rand::random()).collect::<Vec<_>>();
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(0);
+    let curve = (0..4).map(|_| rng.gen()).collect::<Vec<_>>();
     let efd = efd::Efd2::from_curve(&curve, false);
     let sig = efd::PathSig::new(&curve, false);
     let curve_recon = efd.recon_norm(90);
@@ -10,12 +12,9 @@ fn main() {
     use efd::Distance as _;
     println!("t_norm is right: {}", t_norm[0].l2_err(&curve[0]) < 0.8);
     fb::Figure::new(None)
-        .add_line("EFD Recon.", vec![curve_recon[0]], Style::Circle, GREEN)
-        .add_line("", &curve_recon[..85], Style::Line, GREEN)
-        .add_line("Target", vec![curve[0]], Style::Circle, BLUE)
-        .add_line("", &curve[..4], Style::Line, BLUE)
-        .add_line("Norm Time Param.", vec![t_norm[0]], Style::Circle, RED)
-        .add_line("", &t_norm[..4], Style::DashDottedLine, RED)
+        .add_line_fp("EFD Recon.", &curve_recon[..89], Style::Line, GREEN)
+        .add_line_fp("Target", &curve[..2], Style::DashedLine, BLUE)
+        .add_line_fp("tp Norm.", &t_norm[..2], Style::DashDottedLine, RED)
         .legend(LegendPos::UL)
         .plot(SVGBackend::new("test.svg", (1600, 1600)))
         .unwrap();

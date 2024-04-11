@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 efd = { path = "../efd-rs" }
 four-bar = { path = "../four-bar-rs/four-bar", features = ["plot"] }
-rand = "0.8"
+rand = { version = "0.8", features = ["small_rng"] }
