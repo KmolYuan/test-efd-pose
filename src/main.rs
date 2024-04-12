@@ -7,21 +7,15 @@ fn main() {
     let target_pose = std::iter::zip(PATH, &vectors)
         .map(|(p, v)| std::array::from_fn(|i| p[i] + LENGTH * v[i]))
         .collect::<Vec<_>>();
-    // let tp_norm = efd::MotionSig::new(PATH, &vectors).as_t().to_vec();
     let efd = PosedEfd2::from_uvec(PATH, vectors);
     dbg!(efd.harmonic());
     let (curve, pose) = efd.into_inner();
     let target_curve = curve.as_geo().inverse().transform(PATH);
     let target_pose = curve.as_geo().inverse().transform(target_pose);
-    let q_trans = pose.as_geo().trans();
     let curve = curve.recon_norm(90);
     // let curve = curve.recon_norm_by(&tp_norm);
-    let pose = pose
-        .recon_norm(90)
-        // .recon_norm_by(&tp_norm)
-        .into_iter()
-        .map(|q| std::array::from_fn(|i| q_trans[i] + q[i]))
-        .collect::<Vec<_>>();
+    let pose = pose.recon(90);
+    // let pose = pose.recon_by(&tp_norm);
     let b = SVGBackend::new("test.svg", (1600, 1600));
     let mut fig = fb::Figure::new(None)
         .add_line("Target", &target_curve, Style::Line, RED)
