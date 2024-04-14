@@ -5,17 +5,18 @@ use four_bar::{
 };
 
 fn main() {
+    // === Low point number
+    let target_curve = PATH.to_vec();
+    const LENGTH: f64 = 6.36;
+    let vectors = ANGLE.iter().map(|a| [a.cos(), a.sin()]).collect::<Vec<_>>();
+    // === High point number
     // let target_fb = ron::de::from_reader::<_, four_bar::MFourBar>(
     //     std::fs::File::open("hsieh-motion.ron").unwrap(),
     // )
     // .unwrap();
     // const LENGTH: f64 = 7.29;
     // let (target_curve, vectors) = target_fb.pose(180);
-    // ===
-    let target_curve = PATH.to_vec();
-    const LENGTH: f64 = 6.36;
-    let vectors = ANGLE.iter().map(|a| [a.cos(), a.sin()]).collect::<Vec<_>>();
-    // === Hsieh
+    // === Hsieh Result
     // let fb =
     //     ron::de::from_reader::<_, MFourBar>(std::fs::File::open("hsieh.ron").unwrap()).unwrap();
     let target_pose = target_curve
@@ -29,9 +30,10 @@ fn main() {
     let mut history = Vec::with_capacity(GEN as usize);
     let mut pareto = Vec::with_capacity(GEN as usize);
     let func = syn::MFbSyn::from_uvec(&target_curve, vectors, syn::Mode::Open);
+    println!("Harmonic: {}", func.harmonic());
     let pb = indicatif::ProgressBar::new(GEN);
     pb.set_style(indicatif::ProgressStyle::with_template("{wide_bar} {msg} {pos}/{len}").unwrap());
-    let s = mh::Solver::build(mh::De::default().strategy(mh::Strategy::C1F1), func)
+    let s = mh::Solver::build(mh::De::default(), func)
         .seed(0)
         .pop_num(2000)
         .task(|ctx| ctx.gen == GEN)
@@ -54,6 +56,8 @@ fn main() {
     println!("Error: {}", err.eval());
     let b = SVGBackend::new("history.svg", (1200, 800));
     plot::fb::history_pareto(b, history, pareto).unwrap();
+    let fb_str = ron::ser::to_string_pretty(&fb, Default::default()).unwrap();
+    std::fs::write("syn.ron", fb_str).unwrap();
     let (curve, pose) = fb.pose(60);
     let pose = curve
         .iter()
@@ -65,9 +69,9 @@ fn main() {
         .add_line("Target", &target_curve, Style::Line, RED)
         .add_line("", &target_pose, Style::Circle, RED);
     for (p, v) in target_curve.iter().zip(&target_pose) {
-        fig.push_line("", vec![*p, *v], Style::DashDottedLine, RED);
+        fig.push_line("", vec![*p, *v], Style::Line, RED);
     }
-    fig.push_line("Optimized", &curve, Style::Line, BLUE);
+    fig.push_line("Optimized", &curve, Style::DashDottedLine, BLUE);
     fig.push_line("", &pose, Style::Circle, BLUE);
     for (p, v) in curve.iter().zip(&pose) {
         fig.push_line("", vec![*p, *v], Style::DashDottedLine, BLUE);
