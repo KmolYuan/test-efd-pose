@@ -15,7 +15,7 @@ fn main() {
     // )
     // .unwrap();
     // const LENGTH: f64 = 7.29;
-    // let (target_curve, vectors) = target_fb.pose(180);
+    // let (target_curve, vectors) = target_fb.pose(60);
     // === Hsieh Result
     // let fb =
     //     ron::de::from_reader::<_, MFourBar>(std::fs::File::open("hsieh.ron").unwrap()).unwrap();
@@ -55,6 +55,7 @@ fn main() {
     use four_bar::mh::Fitness as _;
     println!("Error: {}", err.eval());
     let b = SVGBackend::new("history.svg", (1200, 800));
+    // plot::fb::history(b, history).unwrap();
     plot::fb::history_pareto(b, history, pareto).unwrap();
     let fb_str = ron::ser::to_string_pretty(&fb, Default::default()).unwrap();
     std::fs::write("syn.ron", fb_str).unwrap();
