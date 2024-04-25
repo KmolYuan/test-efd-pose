@@ -65,20 +65,12 @@ fn main() {
         .zip(pose)
         .map(|(c, v)| std::array::from_fn(|i| c[i] + LENGTH * v[i]))
         .collect::<Vec<_>>();
-    let mut fig = plot::fb::Figure::new(None)
+    plot::fb::Figure::new()
         .legend(LegendPos::LR)
-        .add_line("Target", &target_curve, Style::Line, RED)
-        .add_line("", &target_pose, Style::Circle, RED);
-    for (p, v) in target_curve.iter().zip(&target_pose) {
-        fig.push_line("", vec![*p, *v], Style::Line, RED);
-    }
-    fig.push_line("Optimized", &curve, Style::DashDottedLine, BLUE);
-    fig.push_line("", &pose, Style::Circle, BLUE);
-    for (p, v) in curve.iter().zip(&pose) {
-        fig.push_line("", vec![*p, *v], Style::DashDottedLine, BLUE);
-    }
-    let b = SVGBackend::new("syn.svg", (1600, 1600));
-    fig.plot(b).unwrap();
+        .add_pose("Target", &target_curve, &target_pose, Style::Line, RED)
+        .add_pose("Optimized", &curve, &pose, Style::DashDottedLine, BLUE)
+        .plot(SVGBackend::new("syn.svg", (1600, 1600)))
+        .unwrap();
 }
 
 #[allow(unused)]
