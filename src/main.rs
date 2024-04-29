@@ -10,26 +10,20 @@ fn main() {
     let efd = PosedEfd2::from_uvec(PATH, vectors);
     dbg!(efd.harmonic());
     let (curve, pose) = efd.into_inner();
-    let target_curve = curve.as_geo().inverse().transform(PATH);
-    let target_pose = curve.as_geo().inverse().transform(target_pose);
+    let geo_inv = curve.as_geo().inverse();
+    let target_curve = geo_inv.transform(PATH);
+    let target_pose = geo_inv.transform(target_pose);
     let curve = curve.recon_norm(90);
     // let curve = curve.recon_norm_by(&tp_norm);
     let pose = pose.recon(90);
     // let pose = pose.recon_by(&tp_norm);
     let b = SVGBackend::new("test.svg", (1600, 1600));
-    let mut fig = fb::Figure::new(None)
-        .add_line("Target", &target_curve, Style::Line, RED)
-        .add_line("", &target_pose, Style::Circle, RED)
-        .add_line("EFD Recon.", &curve, Style::DashDottedLine, BLUE)
-        .add_line("", &pose, Style::Circle, BLUE)
-        .legend(LegendPos::UR);
-    for (p, q) in target_curve.iter().zip(&target_pose) {
-        fig.push_line("", vec![*p, *q], Style::Line, RED);
-    }
-    for (p, q) in curve.iter().zip(&pose) {
-        fig.push_line("", vec![*p, *q], Style::DashDottedLine, BLUE);
-    }
-    fig.plot(b).unwrap();
+    fb::Figure::new()
+        .add_pose("Target", &target_curve, &target_pose, Style::Line, RED)
+        .add_pose("EFD Recon.", &curve, &pose, Style::DashDottedLine, BLUE)
+        .legend(LegendPos::UR)
+        .plot(b)
+        .unwrap();
 }
 
 const PATH: &[[f64; 2]] = &[
