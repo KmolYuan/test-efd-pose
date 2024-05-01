@@ -67,8 +67,20 @@ fn main() {
         .collect::<Vec<_>>();
     plot::fb::Figure::new()
         .legend(LegendPos::LR)
-        .add_pose("Target", &target_curve, &target_pose, Style::Line, RED)
-        .add_pose("Optimized", &curve, &pose, Style::DashDottedLine, BLUE)
+        .add_pose(
+            "Target",
+            (&target_curve, &target_pose, LENGTH),
+            Style::Line,
+            RED,
+            false,
+        )
+        .add_pose(
+            "Optimized",
+            (&curve, &pose, LENGTH),
+            Style::DashDottedLine,
+            BLUE,
+            true,
+        )
         .plot(SVGBackend::new("syn.svg", (1600, 1600)))
         .unwrap();
 }
