@@ -8,18 +8,16 @@ fn main() {
     let efd = PosedEfd2::from_uvec(&target_curve, &vectors);
     dbg!(efd.harmonic());
     let (curve, pose) = efd.into_inner();
-    let geo_inv = curve.as_geo().inverse();
-    let target_curve = geo_inv.transform(&target_curve);
-    let vectors = geo_inv.only_rot().transform(vectors);
-    let curve = curve.recon_norm(90);
-    // let curve = curve.recon_norm_by(&tp_norm);
-    let pose = pose.recon(90);
-    // let pose = pose.recon_by(&tp_norm);
+    let geo = curve.as_geo();
+    let curve = curve.recon(90);
+    // let curve = curve.recon_by(&tp_norm);
+    let pose = geo.transform(pose.recon(90));
+    // let pose = geo.transform(pose.recon_by(&tp_norm));
     let b = SVGBackend::new("test.svg", (1600, 1600));
     fb::Figure::new()
         .add_pose(
             "Target",
-            (&target_curve, vectors, 1.),
+            (&target_curve, vectors, geo.scale()),
             Style::Line,
             RED,
             false,
