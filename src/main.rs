@@ -11,17 +11,29 @@ fn main() {
     let geo_inv = curve.as_geo().inverse();
     let target_curve = geo_inv.transform(&target_curve);
     let vectors = geo_inv.only_rot().transform(vectors);
-    let target_pose = std::iter::zip(&target_curve, vectors)
-        .map(|(p, v)| std::array::from_fn(|i| p[i] + v[i]))
-        .collect::<Vec<_>>();
     let curve = curve.recon_norm(90);
     // let curve = curve.recon_norm_by(&tp_norm);
     let pose = pose.recon(90);
     // let pose = pose.recon_by(&tp_norm);
     let b = SVGBackend::new("test.svg", (1600, 1600));
     fb::Figure::new()
-        .add_pose("Target", &target_curve, &target_pose, Style::Line, RED)
-        .add_pose("EFD Recon.", &curve, &pose, Style::DashDottedLine, BLUE)
+        .add_pose(
+            "Target",
+            (&target_curve, vectors, 1.),
+            Style::Line,
+            RED,
+            false,
+        )
+        .add_line_data(LineData {
+            label: "EFD Recon.".into(),
+            line: LineType::Pose {
+                curve: curve.into(),
+                pose: pose.into(),
+                is_frame: false,
+            },
+            style: Style::DashedLine,
+            color: BLUE.into(),
+        })
         .legend(LegendPos::LR)
         .plot(b)
         .unwrap();
